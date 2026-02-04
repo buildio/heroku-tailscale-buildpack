@@ -82,9 +82,12 @@ The following settings are available for configuration via environment variables
   by the OS. Note that this will change the machine name used in MagicDNS. Defaults to the 
   hostname of the application (a guid). If you have [Heroku Labs runtime-dyno-metadata](https://devcenter.heroku.com/articles/dyno-metadata)
   enabled, it defaults to ``[commit]-[dyno]-[appname]``.
-- ``TAILSCALE_SHIELDS_UP"`` - Block incoming connections from other devices on your Tailscale 
+- ``TAILSCALE_SHIELDS_UP"`` - Block incoming connections from other devices on your Tailscale
   network. Useful for personal devices that only make outgoing connections. Defaults to off.
 - ``TAILSCALED_VERBOSE`` - Controls verbosity for the tailscaled command. Defaults to 0.
+- ``TAILSCALE_SOCKS5_PORT`` - Port for SOCKS5 proxy. Defaults to 1055. Set to empty to disable.
+- ``TAILSCALE_HTTP_PROXY_PORT`` - Port for HTTP proxy. Disabled by default. Set to enable
+  (e.g., 1056). Useful for HTTP clients that don't support SOCKS5 (like Ruby's Excon gem).
 
 The following settings are for the compile process for the buildpack. If you change these, you must
 trigger a new build to see the change. Simply changing the environment variables in Heroku will not

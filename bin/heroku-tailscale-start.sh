@@ -32,7 +32,19 @@ else
   fi
   log "Using Tailscale hostname=$tailscale_hostname"
 
-  tailscaled -verbose ${TAILSCALED_VERBOSE:-0} --tun=userspace-networking --socks5-server=localhost:1055 &
+  # Build proxy flags based on environment variables
+  proxy_flags=""
+  socks5_port="${TAILSCALE_SOCKS5_PORT:-1055}"
+  http_proxy_port="${TAILSCALE_HTTP_PROXY_PORT:-}"
+
+  if [ -n "$socks5_port" ]; then
+    proxy_flags="$proxy_flags --socks5-server=localhost:$socks5_port"
+  fi
+  if [ -n "$http_proxy_port" ]; then
+    proxy_flags="$proxy_flags --outbound-http-proxy-listen=localhost:$http_proxy_port"
+  fi
+
+  tailscaled -verbose ${TAILSCALED_VERBOSE:-0} --tun=userspace-networking $proxy_flags &
   until tailscale up \
     --authkey=${TAILSCALE_AUTH_KEY} \
     --hostname="$tailscale_hostname" \
@@ -45,6 +57,13 @@ else
     sleep 5
   done
 
-  export ALL_PROXY=socks5://localhost:1055/
+  # Set proxy environment variables based on what's configured
+  if [ -n "$http_proxy_port" ]; then
+    export HTTP_PROXY=http://localhost:$http_proxy_port/
+    export HTTPS_PROXY=http://localhost:$http_proxy_port/
+  fi
+  if [ -n "$socks5_port" ]; then
+    export ALL_PROXY=socks5://localhost:$socks5_port/
+  fi
   log "Tailscale started"
 fi
